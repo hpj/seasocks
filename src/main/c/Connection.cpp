@@ -886,13 +886,13 @@ bool Connection::processHeaders(uint8_t* first, uint8_t* last) {
     _request = std::make_unique<PageRequest>(_address, requestUri, _server.server(),
                                              verb, std::move(headers));
 
-    const EmbeddedContent* embedded = findEmbeddedContent(requestUri);
-    if (verb == Request::Verb::Get && embedded) {
-        // MRG: one day, this could be a request handler.
-        return sendData(getContentType(requestUri), embedded->data, embedded->length);
-    } else if (verb == Request::Verb::Head && embedded) {
-        return sendHeader(getContentType(requestUri), embedded->length);
-    }
+    // const EmbeddedContent* embedded = findEmbeddedContent(requestUri);
+    // if (verb == Request::Verb::Get && embedded) {
+    //     // MRG: one day, this could be a request handler.
+    //     return sendData(getContentType(requestUri), embedded->data, embedded->length);
+    // } else if (verb == Request::Verb::Head && embedded) {
+    //     return sendHeader(getContentType(requestUri), embedded->length);
+    // }
 
     if (_request->contentLength() > _server.clientBufferSize()) {
         return sendBadRequest("Content length too long");
