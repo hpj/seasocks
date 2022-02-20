@@ -79,7 +79,6 @@ add_library(seasocks ${SEASOCKS_LIBTYPE}
         util/PathHandler.cpp
         util/RootPageHandler.cpp
         ${WIN_FILES}
-        $<TARGET_OBJECTS:embedded>
          "seasocks/StrCompare.h")
 
 set_target_properties(

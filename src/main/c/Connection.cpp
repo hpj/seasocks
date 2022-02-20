@@ -792,28 +792,8 @@ void Connection::handleWebSocketBinaryMessage(const std::vector<uint8_t>& messag
 
 bool Connection::sendError(ResponseCode errorCode, const std::string& body) {
     assert(_state != State::HANDLING_HIXIE_WEBSOCKET);
-    auto errorNumber = static_cast<int>(errorCode);
-    auto message = ::name(errorCode);
     bufferResponseAndCommonHeaders(errorCode);
-    auto errorContent = findEmbeddedContent("/_error.html");
-    std::string document;
-    if (errorContent) {
-        document.assign(errorContent->data, errorContent->data + errorContent->length);
-        replace(document, "%%ERRORCODE%%", toString(errorNumber));
-        replace(document, "%%MESSAGE%%", message);
-        replace(document, "%%BODY%%", body);
-    } else {
-        std::stringstream documentStr;
-        documentStr << "<html><head><title>" << errorNumber << " - " << message << "</title></head>"
-                    << "<body><h1>" << errorNumber << " - " << message << "</h1>"
-                    << "<div>" << body << "</div><hr/><div><i>Powered by "
-                                          "<a href=\"https://github.com/mattgodbolt/seasocks\">Seasocks</a></i></div></body></html>";
-        document = documentStr.str();
-    }
-    bufferLine("Content-Length: " + toString(document.length()));
     bufferLine("Connection: close");
-    bufferLine("");
-    bufferLine(document);
     if (!flush()) {
         return false;
     }
@@ -827,15 +807,7 @@ bool Connection::sendUnsupportedError(const std::string& reason) {
 
 bool Connection::send404() {
     auto path = getRequestUri();
-    auto embedded = findEmbeddedContent(path);
-    if (embedded) {
-        return sendData(getContentType(path), embedded->data, embedded->length);
-    } else if (strcmp(path.c_str(), "/_livestats.js") == 0) {
-        auto stats = _server.getStatsDocument();
-        return sendData("text/javascript", stats.c_str(), stats.length());
-    } else {
-        return sendError(ResponseCode::NotFound, "Unable to find resource for: " + path);
-    }
+    return sendError(ResponseCode::NotFound, "Unable to find resource for: " + path);
 }
 
 bool Connection::sendBadRequest(const std::string& reason) {
